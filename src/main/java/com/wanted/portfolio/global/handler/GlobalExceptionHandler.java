@@ -1,6 +1,7 @@
 package com.wanted.portfolio.global.handler;
 
 import com.wanted.portfolio.global.exception.BadRequestException;
+import com.wanted.portfolio.global.exception.ForbiddenException;
 import com.wanted.portfolio.global.exception.NotFoundException;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -30,5 +31,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<String> handleBadRequestException(BadRequestException e) {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleForbiddenException(ForbiddenException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
     }
 }
