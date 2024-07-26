@@ -1,6 +1,7 @@
 package com.wanted.portfolio.member.service;
 
 import com.wanted.portfolio.global.exception.BadRequestException;
+import com.wanted.portfolio.global.exception.NotFoundException;
 import com.wanted.portfolio.member.dto.MemberRequest;
 import com.wanted.portfolio.member.model.Member;
 import com.wanted.portfolio.member.repository.MemberRepository;
@@ -29,6 +30,12 @@ public class MemberService {
 
         log.info("새로운 멤버가 생성되었습니다. : {}", member);
         return member;
+    }
+
+    @Transactional(readOnly = true)
+    public Member findMember(Long id) {
+        return memberRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("일치하는 멤버를 찾을 수 없습니다."));
     }
 
     private void validateDuplicateEmail(MemberRequest memberRequest) {
