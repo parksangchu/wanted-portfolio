@@ -13,7 +13,7 @@ import lombok.ToString;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@ToString
+@ToString(callSuper = true)
 public class Member extends BaseModel {
 
     @Column(unique = true)

@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,7 +18,7 @@ import lombok.ToString;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@ToString
+@ToString(callSuper = true)
 public class Post extends BaseModel {
 
     private String title;
@@ -30,4 +31,20 @@ public class Post extends BaseModel {
     private Member member;
 
     private Integer view;
+
+    public boolean isWriter(Member member) {
+        return this.member.equals(member);
+    }
+
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    public void changeContent(String content) {
+        this.content = content;
+    }
+
+    public LocalDate getCreateDate() {
+        return super.getCreatedAt().toLocalDate();
+    }
 }

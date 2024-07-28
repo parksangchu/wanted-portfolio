@@ -22,4 +22,5 @@ public class PostResponse {
 
     private final LocalDateTime modifiedAt;
 
+    private final String alertMessage;
 }
