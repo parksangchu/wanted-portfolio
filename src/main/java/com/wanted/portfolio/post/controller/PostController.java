@@ -2,11 +2,16 @@ package com.wanted.portfolio.post.controller;
 
 import com.wanted.portfolio.post.dto.PostRequest;
 import com.wanted.portfolio.post.dto.PostResponse;
+import com.wanted.portfolio.post.dto.PostSearchCondition;
 import com.wanted.portfolio.post.model.Post;
 import com.wanted.portfolio.post.service.PostService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,6 +46,15 @@ public class PostController {
         PostResponse postResponse = toPostResponse(post, message);
 
         return ResponseEntity.ok(postResponse);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<PostResponse>> getAllPosts(Pageable pageable,
+                                                          @ModelAttribute PostSearchCondition postSearchCondition) {
+        
+        Page<Post> posts = postService.getAllPosts(pageable, postSearchCondition);
+        Page<PostResponse> postResponses = posts.map(post -> toPostResponse(post, null));
+        return ResponseEntity.ok(postResponses);
     }
 
     private PostResponse toPostResponse(Post post, String alertMessage) {

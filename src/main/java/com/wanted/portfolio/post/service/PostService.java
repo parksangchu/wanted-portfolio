@@ -7,12 +7,16 @@ import com.wanted.portfolio.global.util.Clock;
 import com.wanted.portfolio.member.model.Member;
 import com.wanted.portfolio.member.service.MemberService;
 import com.wanted.portfolio.post.dto.PostRequest;
+import com.wanted.portfolio.post.dto.PostSearchCondition;
 import com.wanted.portfolio.post.model.Post;
+import com.wanted.portfolio.post.repository.PostQueryRepository;
 import com.wanted.portfolio.post.repository.PostRepository;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +30,7 @@ public class PostService {
     public static final String EXPIRATION_ALERT_MESSAGE = "게시글 생성 후 %d일이 지났습니다. 생성 후 10일 이후에는 수정이 불가능합니다.";
 
     private final PostRepository postRepository;
+    private final PostQueryRepository postQueryRepository;
     private final MemberService memberService;
     private final Clock clock;
 
@@ -68,12 +73,15 @@ public class PostService {
         long days = ChronoUnit.DAYS.between(createdDate, now);
 
         if (days >= ALERT_PERIOD_DAYS) {
-            String message = String.format(EXPIRATION_ALERT_MESSAGE, days);
-
-            return message;
+            return String.format(EXPIRATION_ALERT_MESSAGE, days);
         }
 
         return null;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Post> getAllPosts(Pageable pageable, PostSearchCondition postSearchCondition) {
+        return postQueryRepository.findAll(pageable, postSearchCondition);
     }
 
     private void validateWriter(Post post, Member member) {
