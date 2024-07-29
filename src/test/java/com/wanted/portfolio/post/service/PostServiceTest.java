@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,7 +51,7 @@ class PostServiceTest {
 
     @ParameterizedTest
     @DisplayName("사용자가 동일하고 작성일 기준 10일 이내면 글 수정이 가능하다.")
-    @ValueSource(ints = {8, 9, 10})
+    @ValueSource(ints = {7, 8, 9})
     void updatePost_success(int plusDays) {
         PostRequest postRequest = new PostRequest("title update", "content update");
 
@@ -67,12 +68,10 @@ class PostServiceTest {
     void updatePost_expiration() {
         PostRequest postRequest = new PostRequest("test update", "content update");
 
-        int plusDays = 11;
+        int plusDays = 10;
         LocalDate createDate = post.getCreateDate();
-        System.out.println(createDate);
 
         LocalDate exDate = createDate.plusDays(plusDays);
-        System.out.println(exDate);
 
         when(clock.getCurrentDate()).thenReturn(exDate);
 
@@ -103,17 +102,41 @@ class PostServiceTest {
         when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
         String message = postService.makeAlertMessage(post);
 
-        assertThat(message).isEqualTo(String.format(PostService.EXPIRATION_ALERT_MESSAGE, plusDays));
+        assertThat(message).isEqualTo(String.format(PostService.EXPIRATION_ALERT_MESSAGE, plusDays + 1));
     }
 
     @Test
-    @DisplayName("게시글 작성 후 9일이 지나기 전에는 빈 메시지를 반환한다.")
+    @DisplayName("게시글 작성일 기준 9일 전에는 빈 메시지를 반환한다.")
     void makeAlertMessage_null() {
-        int plusDays = 8;
+        int plusDays = 7;
 
         when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
         String message = postService.makeAlertMessage(post);
 
         assertThat(message).isNull();
+    }
+
+    @ParameterizedTest
+    @DisplayName("아직 게시글 수정이 가능하면 남은 기간을 계산해서 반환한다.")
+    @CsvSource(value = {"8,1", "9,0"})
+        // 각각 9일째, 10일째 이므로 1일 , 0일
+    void calculateRemainingEditDays(int plusDays, int remainingEditDays) {
+        when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
+
+        int result = postService.calculateRemainingEditDays(post);
+
+        assertThat(result).isEqualTo(remainingEditDays);
+    }
+
+    @ParameterizedTest
+    @DisplayName("게시글 수정이 불가하면 남은 기간은 null을 반환한다.")
+    @ValueSource(ints = {10, 11, 12})
+    void calculateRemainingEditDays_null(int plusDays) {
+        when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
+
+        Integer result = postService.calculateRemainingEditDays(post);
+
+        assertThat(result).isNull();
+
     }
 }
