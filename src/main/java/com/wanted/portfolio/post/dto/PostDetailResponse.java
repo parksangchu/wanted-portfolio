@@ -1,5 +1,6 @@
 package com.wanted.portfolio.post.dto;
 
+import com.wanted.portfolio.post.model.Post;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,5 +22,10 @@ public class PostDetailResponse {
 
     private final LocalDateTime modifiedAt;
 
-    private final int remainingEditDays;
+    private final Integer remainingEditDays;
+
+    public static PostDetailResponse of(Post post, Integer remainingEditDays) {
+        return new PostDetailResponse(post.getId(), post.getTitle(), post.getContent(), post.getMember().getName(),
+                post.getView(), post.getCreatedAt(), post.getModifiedAt(), remainingEditDays);
+    }
 }

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -113,5 +114,29 @@ class PostServiceTest {
         String message = postService.makeAlertMessage(post);
 
         assertThat(message).isNull();
+    }
+
+    @ParameterizedTest
+    @DisplayName("아직 게시글 수정이 가능하면 남은 기간을 계산해서 반환한다.")
+    @CsvSource(value = {"8,1", "9,0"})
+        // 각각 9일째, 10일째 이므로 1일 , 0일
+    void calculateRemainingEditDays(int plusDays, int remainingEditDays) {
+        when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
+
+        int result = postService.calculateRemainingEditDays(post);
+
+        assertThat(result).isEqualTo(remainingEditDays);
+    }
+
+    @ParameterizedTest
+    @DisplayName("게시글 수정이 불가하면 남은 기간은 null을 반환한다.")
+    @ValueSource(ints = {10, 11, 12})
+    void calculateRemainingEditDays_null(int plusDays) {
+        when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
+
+        Integer result = postService.calculateRemainingEditDays(post);
+
+        assertThat(result).isNull();
+
     }
 }

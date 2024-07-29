@@ -1,6 +1,7 @@
 package com.wanted.portfolio.post.controller;
 
 import com.wanted.portfolio.post.dto.PostCreateResponse;
+import com.wanted.portfolio.post.dto.PostDetailResponse;
 import com.wanted.portfolio.post.dto.PostListResponse;
 import com.wanted.portfolio.post.dto.PostRequest;
 import com.wanted.portfolio.post.dto.PostSearchCondition;
@@ -58,5 +59,16 @@ public class PostController {
         Page<Post> posts = postService.getAllPosts(pageable, postSearchCondition);
         Page<PostListResponse> postResponses = posts.map(PostListResponse::from);
         return ResponseEntity.ok(postResponses);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<PostDetailResponse> getPost(@PathVariable Long id) {
+
+        Post post = postService.findPost(id);
+        Integer remainingEditDays = postService.calculateRemainingEditDays(post);
+
+        PostDetailResponse postDetailResponse = PostDetailResponse.of(post, remainingEditDays);
+
+        return ResponseEntity.ok(postDetailResponse);
     }
 }
