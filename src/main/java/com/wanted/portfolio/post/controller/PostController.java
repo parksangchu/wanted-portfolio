@@ -12,7 +12,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -70,5 +72,19 @@ public class PostController {
         PostDetailResponse postDetailResponse = PostDetailResponse.of(post, remainingEditDays);
 
         return ResponseEntity.ok(postDetailResponse);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> softDeletePost(@PathVariable Long id) {
+        postService.softDelete(id);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/hard")
+    public ResponseEntity<Void> hardDeletePost(@PathVariable Long id) {
+        postService.hardDelete(id);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
