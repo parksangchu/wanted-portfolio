@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostService {
     private static final int EDITABLE_PERIOD_DAYS = 10;
     private static final int ALERT_PERIOD_DAYS = 9;
-    public static final String EXPIRATION_ALERT_MESSAGE = "게시글 생성 후 %d일이 지났습니다. 생성 후 10일 이후에는 수정이 불가능합니다.";
+    public static final String EXPIRATION_ALERT_MESSAGE = "게시글 생성 %d일째 입니다. 생성일 기준 10일 이후에는 수정이 불가능합니다.";
 
     private final PostRepository postRepository;
     private final PostQueryRepository postQueryRepository;
@@ -66,11 +66,12 @@ public class PostService {
         return postRepository.findById(id).orElseThrow(() -> new NotFoundException("id와 일치하는 게시글을 찾을 수 없습니다."));
     }
 
+    @Transactional(readOnly = true)
     public String makeAlertMessage(Post post) {
         LocalDate createdDate = post.getCreateDate();
-        LocalDate now = clock.getCurrentDate();
+        LocalDate nowDate = clock.getCurrentDate();
 
-        long days = ChronoUnit.DAYS.between(createdDate, now);
+        long days = ChronoUnit.DAYS.between(createdDate, nowDate) + 1; // 당일까지 적용
 
         if (days >= ALERT_PERIOD_DAYS) {
             return String.format(EXPIRATION_ALERT_MESSAGE, days);
@@ -92,8 +93,9 @@ public class PostService {
 
     private void validateExpiration(LocalDate createDate) {
         LocalDate nowDate = clock.getCurrentDate();
+        long days = ChronoUnit.DAYS.between(createDate, nowDate) + 1; // 당일까지 적용
 
-        if (nowDate.isAfter(createDate.plusDays(EDITABLE_PERIOD_DAYS))) {
+        if (days > EDITABLE_PERIOD_DAYS) {
             throw new BadRequestException("해당 글의 수정 가능 기간이 지났습니다.");
         }
     }

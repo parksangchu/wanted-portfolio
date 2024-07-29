@@ -50,7 +50,7 @@ class PostServiceTest {
 
     @ParameterizedTest
     @DisplayName("사용자가 동일하고 작성일 기준 10일 이내면 글 수정이 가능하다.")
-    @ValueSource(ints = {8, 9, 10})
+    @ValueSource(ints = {7, 8, 9})
     void updatePost_success(int plusDays) {
         PostRequest postRequest = new PostRequest("title update", "content update");
 
@@ -67,12 +67,10 @@ class PostServiceTest {
     void updatePost_expiration() {
         PostRequest postRequest = new PostRequest("test update", "content update");
 
-        int plusDays = 11;
+        int plusDays = 10;
         LocalDate createDate = post.getCreateDate();
-        System.out.println(createDate);
 
         LocalDate exDate = createDate.plusDays(plusDays);
-        System.out.println(exDate);
 
         when(clock.getCurrentDate()).thenReturn(exDate);
 
@@ -103,13 +101,13 @@ class PostServiceTest {
         when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
         String message = postService.makeAlertMessage(post);
 
-        assertThat(message).isEqualTo(String.format(PostService.EXPIRATION_ALERT_MESSAGE, plusDays));
+        assertThat(message).isEqualTo(String.format(PostService.EXPIRATION_ALERT_MESSAGE, plusDays + 1));
     }
 
     @Test
-    @DisplayName("게시글 작성 후 9일이 지나기 전에는 빈 메시지를 반환한다.")
+    @DisplayName("게시글 작성일 기준 9일 전에는 빈 메시지를 반환한다.")
     void makeAlertMessage_null() {
-        int plusDays = 8;
+        int plusDays = 7;
 
         when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
         String message = postService.makeAlertMessage(post);
