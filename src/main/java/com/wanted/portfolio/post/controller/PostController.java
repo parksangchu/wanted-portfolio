@@ -1,8 +1,10 @@
 package com.wanted.portfolio.post.controller;
 
+import com.wanted.portfolio.post.dto.PostCreateResponse;
+import com.wanted.portfolio.post.dto.PostListResponse;
 import com.wanted.portfolio.post.dto.PostRequest;
-import com.wanted.portfolio.post.dto.PostResponse;
 import com.wanted.portfolio.post.dto.PostSearchCondition;
+import com.wanted.portfolio.post.dto.PostUpdateResponse;
 import com.wanted.portfolio.post.model.Post;
 import com.wanted.portfolio.post.service.PostService;
 import jakarta.validation.Valid;
@@ -26,39 +28,35 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public ResponseEntity<PostResponse> createPost(@Valid @RequestBody PostRequest postRequest) {
-        Long memberId = 1L;
+    public ResponseEntity<PostCreateResponse> createPost(@Valid @RequestBody PostRequest postRequest) {
+        Long memberId = 1L; // 로그인 기능 미구현으로 1L로 처리
 
-        Post post = postService.createPost(postRequest, memberId); // 로그인 기능 미구현으로 1L로 처리
+        Post post = postService.createPost(postRequest, memberId);
 
-        PostResponse postResponse = toPostResponse(post, null);
+        PostCreateResponse postResponse = PostCreateResponse.from(post);
 
         return ResponseEntity.ok(postResponse);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PostResponse> updatePost(@Valid @RequestBody PostRequest postRequest, @PathVariable Long id) {
+    public ResponseEntity<PostUpdateResponse> updatePost(@Valid @RequestBody PostRequest postRequest,
+                                                         @PathVariable Long id) {
         Long memberId = 1L; // 로그인 기능 미구현으로 1L로 처리
 
         Post post = postService.updatePost(id, postRequest, memberId);
-        String message = postService.makeAlertMessage(post);
+        String alertMessage = postService.makeAlertMessage(post);
 
-        PostResponse postResponse = toPostResponse(post, message);
+        PostUpdateResponse postResponse = PostUpdateResponse.of(post, alertMessage);
 
         return ResponseEntity.ok(postResponse);
     }
 
     @GetMapping
-    public ResponseEntity<Page<PostResponse>> getAllPosts(Pageable pageable,
-                                                          @ModelAttribute PostSearchCondition postSearchCondition) {
-        
-        Page<Post> posts = postService.getAllPosts(pageable, postSearchCondition);
-        Page<PostResponse> postResponses = posts.map(post -> toPostResponse(post, null));
-        return ResponseEntity.ok(postResponses);
-    }
+    public ResponseEntity<Page<PostListResponse>> getAllPosts(Pageable pageable,
+                                                              @ModelAttribute PostSearchCondition postSearchCondition) {
 
-    private PostResponse toPostResponse(Post post, String alertMessage) {
-        return new PostResponse(post.getId(), post.getTitle(), post.getContent()
-                , post.getMember().getName(), post.getView(), post.getCreatedAt(), post.getModifiedAt(), alertMessage);
+        Page<Post> posts = postService.getAllPosts(pageable, postSearchCondition);
+        Page<PostListResponse> postResponses = posts.map(PostListResponse::from);
+        return ResponseEntity.ok(postResponses);
     }
 }
