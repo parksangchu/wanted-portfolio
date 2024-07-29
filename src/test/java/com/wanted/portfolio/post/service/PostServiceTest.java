@@ -11,6 +11,7 @@ import com.wanted.portfolio.member.model.Member;
 import com.wanted.portfolio.member.repository.MemberRepository;
 import com.wanted.portfolio.post.dto.PostRequest;
 import com.wanted.portfolio.post.model.Post;
+import com.wanted.portfolio.post.repository.PostRepository;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,6 +40,8 @@ class PostServiceTest {
 
     @MockBean
     private Clock clock;
+    @Autowired
+    private PostRepository postRepository;
 
     @BeforeEach
     void setUp() {
@@ -138,5 +141,25 @@ class PostServiceTest {
 
         assertThat(result).isNull();
 
+    }
+
+    @Test
+    @DisplayName("게시글의 deleteAt에 값을 부여하여 임시 삭제처리한다.")
+    void softDelete() {
+        assertThat(post.getDeletedAt()).isNull();
+
+        postService.softDelete(post.getId());
+
+        assertThat(post.getDeletedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("게시글을 db에서 제거하여 영구 제거한다.")
+    void hardDelete() {
+        assertThat(postRepository.findById(post.getId())).isNotEmpty();
+
+        postService.hardDelete(post.getId());
+
+        assertThat(postRepository.findById(post.getId())).isEmpty();
     }
 }

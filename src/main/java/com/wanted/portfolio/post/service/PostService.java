@@ -91,6 +91,20 @@ public class PostService {
         return postQueryRepository.findAll(pageable, postSearchCondition);
     }
 
+    public void softDelete(Long id) {
+        Post post = findPost(id);
+        post.softDelete();
+
+        log.info("게시글이 삭제 되었습니다. id = {}", id);
+    }
+
+    public void hardDelete(Long id) {
+        Post post = findPost(id);
+        postRepository.delete(post);
+
+        log.info("게시글이 영구 삭제되었습니다. id = {}", id);
+    }
+
     private void validateWriter(Post post, Member member) {
         if (!post.isWriter(member)) {
             throw new ForbiddenException("해당 글 수정 권한이 없는 사용자입니다.");
