@@ -31,6 +31,7 @@ public class PostQueryRepository {
                         , contentContains(postSearchCondition.getContent())
                         , writerContains(postSearchCondition.getWriter())
                         , deleteAtIsNull())
+                .join(post.member).fetchJoin()
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(orderSpecifiers(pageable.getSort()))
