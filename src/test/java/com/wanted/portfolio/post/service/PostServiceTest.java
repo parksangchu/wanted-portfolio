@@ -8,6 +8,7 @@ import com.wanted.portfolio.global.exception.BadRequestException;
 import com.wanted.portfolio.global.exception.ForbiddenException;
 import com.wanted.portfolio.global.util.Clock;
 import com.wanted.portfolio.member.model.Member;
+import com.wanted.portfolio.member.model.Role;
 import com.wanted.portfolio.member.repository.MemberRepository;
 import com.wanted.portfolio.post.dto.PostRequest;
 import com.wanted.portfolio.post.model.Post;
@@ -45,7 +46,7 @@ class PostServiceTest {
 
     @BeforeEach
     void setUp() {
-        member = new Member("tester@mail.com", "010-1111-1111", "tester", "test");
+        member = new Member("tester@mail.com", "010-1111-1111", "tester", "test", Role.USER);
         memberRepository.save(member);
 
         PostRequest postRequest = new PostRequest("test title", "test content");
@@ -85,7 +86,7 @@ class PostServiceTest {
     @Test
     @DisplayName("사용자가 동일하지 않으면 글 수정이 불가능하다.")
     void updatePost_invalidWriter() {
-        Member other = new Member(null, null, null, null);
+        Member other = new Member(null, null, null, null, Role.USER);
         memberRepository.save(other);
 
         PostRequest postRequest = new PostRequest("test update", "content update");

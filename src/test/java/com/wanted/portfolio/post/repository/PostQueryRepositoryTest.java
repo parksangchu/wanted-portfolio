@@ -3,6 +3,7 @@ package com.wanted.portfolio.post.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.wanted.portfolio.member.model.Member;
+import com.wanted.portfolio.member.model.Role;
 import com.wanted.portfolio.member.repository.MemberRepository;
 import com.wanted.portfolio.post.dto.PostSearchCondition;
 import com.wanted.portfolio.post.model.Post;
@@ -34,13 +35,14 @@ public class PostQueryRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        memberRepository.deleteAll();
         initializeTestData();
     }
 
     private void initializeTestData() {
         // Create and save members
-        Member member1 = new Member("john@example.com", null, "John Doe", null);
-        Member member2 = new Member("jane@example.com", null, "Jane Smith", null);
+        Member member1 = new Member("john@example.com", null, "John Doe", null, Role.USER);
+        Member member2 = new Member("jane@example.com", null, "Jane Smith", null, Role.USER);
         memberRepository.saveAll(Arrays.asList(member1, member2));
 
         // Create and save posts

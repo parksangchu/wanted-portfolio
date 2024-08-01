@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wanted.portfolio.member.model.Member;
+import com.wanted.portfolio.member.model.Role;
 import com.wanted.portfolio.member.service.MemberService;
 import com.wanted.portfolio.post.dto.PostRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +39,7 @@ class PostControllerTest {
 
     @BeforeEach
     void setUp() {
-        member = new Member("email@email.com", "010-1111-1111", "tester", "1234");
+        member = new Member("email@email.com", "010-1111-1111", "tester", "1234", Role.USER);
     }
 
     @Test
