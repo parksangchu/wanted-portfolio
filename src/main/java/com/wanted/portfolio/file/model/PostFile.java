@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +20,7 @@ public class PostFile extends BaseModel {
     @JoinColumn(name = "post_id")
     private Post post;
 
-    private String fileName;
-
-    private String filePath;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id")
+    private File file;
 }
