@@ -30,4 +30,8 @@ public class Member extends BaseModel {
 
     @Enumerated(value = EnumType.STRING)
     private Role role;
+
+    public boolean hasSameName(String name) {
+        return this.name.equals(name);
+    }
 }

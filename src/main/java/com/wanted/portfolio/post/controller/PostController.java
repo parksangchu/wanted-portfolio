@@ -1,5 +1,6 @@
 package com.wanted.portfolio.post.controller;
 
+import com.wanted.portfolio.auth.dto.CustomUserDetails;
 import com.wanted.portfolio.post.dto.PostCreateResponse;
 import com.wanted.portfolio.post.dto.PostDetailResponse;
 import com.wanted.portfolio.post.dto.PostListResponse;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -31,10 +33,12 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public ResponseEntity<PostCreateResponse> createPost(@Valid @RequestBody PostRequest postRequest) {
-        Long memberId = 1L; // 로그인 기능 미구현으로 1L로 처리
+    public ResponseEntity<PostCreateResponse> createPost(@Valid @RequestBody PostRequest postRequest,
+                                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        Post post = postService.createPost(postRequest, memberId);
+        String username = userDetails.getUsername();
+
+        Post post = postService.createPost(postRequest, username);
 
         PostCreateResponse postResponse = PostCreateResponse.from(post);
 
@@ -43,10 +47,12 @@ public class PostController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PostUpdateResponse> updatePost(@Valid @RequestBody PostRequest postRequest,
-                                                         @PathVariable Long id) {
-        Long memberId = 1L; // 로그인 기능 미구현으로 1L로 처리
+                                                         @PathVariable Long id,
+                                                         @AuthenticationPrincipal CustomUserDetails userDetails) {
+        String username = userDetails.getUsername();
+        String role = userDetails.getRole();
 
-        Post post = postService.updatePost(id, postRequest, memberId);
+        Post post = postService.updatePost(id, postRequest, username, role);
         String alertMessage = postService.makeAlertMessage(post);
 
         PostUpdateResponse postResponse = PostUpdateResponse.of(post, alertMessage);
@@ -75,15 +81,25 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> softDeletePost(@PathVariable Long id) {
-        postService.softDelete(id);
+    public ResponseEntity<Void> softDeletePost(@PathVariable Long id,
+                                               @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        String username = userDetails.getUsername();
+        String role = userDetails.getRole();
+
+        postService.softDelete(id, username, role);
 
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/hard")
-    public ResponseEntity<Void> hardDeletePost(@PathVariable Long id) {
-        postService.hardDelete(id);
+    public ResponseEntity<Void> hardDeletePost(@PathVariable Long id,
+                                               @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        String username = userDetails.getUsername();
+        String role = userDetails.getRole();
+
+        postService.hardDelete(id, username, role);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

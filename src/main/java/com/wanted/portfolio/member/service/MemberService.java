@@ -37,7 +37,13 @@ public class MemberService {
     @Transactional(readOnly = true)
     public Member findMember(Long id) {
         return memberRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("일치하는 멤버를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundException("id와 일치하는 멤버를 찾을 수 없습니다."));
+    }
+
+    @Transactional(readOnly = true)
+    public Member findMemberByName(String name) {
+        return memberRepository.findByName(name)
+                .orElseThrow(() -> new NotFoundException("이름과 일치하는 멤버를 찾을 수 없습니다."));
     }
 
     private void validateDuplicateEmail(MemberRequest memberRequest) {

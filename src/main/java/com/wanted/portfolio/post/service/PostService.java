@@ -5,6 +5,7 @@ import com.wanted.portfolio.global.exception.ForbiddenException;
 import com.wanted.portfolio.global.exception.NotFoundException;
 import com.wanted.portfolio.global.util.Clock;
 import com.wanted.portfolio.member.model.Member;
+import com.wanted.portfolio.member.model.Role;
 import com.wanted.portfolio.member.service.MemberService;
 import com.wanted.portfolio.post.dto.PostRequest;
 import com.wanted.portfolio.post.dto.PostSearchCondition;
@@ -34,8 +35,8 @@ public class PostService {
     private final MemberService memberService;
     private final Clock clock;
 
-    public Post createPost(PostRequest postRequest, Long memberId) {
-        Member member = memberService.findMember(memberId);
+    public Post createPost(PostRequest postRequest, String memberName) {
+        Member member = memberService.findMemberByName(memberName);
 
         Post post = new Post(postRequest.getTitle(), postRequest.getContent(), member, 0);
 
@@ -46,11 +47,10 @@ public class PostService {
         return post;
     }
 
-    public Post updatePost(Long id, PostRequest postRequest, Long memberId) {
-        Member member = memberService.findMember(memberId);
+    public Post updatePost(Long id, PostRequest postRequest, String memberName, String memberRole) {
         Post post = findPost(id);
 
-        validateWriter(post, member);
+        validatePermission(post, memberName, memberRole);
         validateExpiration(post.getCreateDate());
 
         post.changeTitle(postRequest.getTitle());
@@ -91,22 +91,28 @@ public class PostService {
         return postQueryRepository.findAll(pageable, postSearchCondition);
     }
 
-    public void softDelete(Long id) {
+    public void softDelete(Long id, String memberName, String memberRole) {
         Post post = findPost(id);
+
+        validatePermission(post, memberName, memberRole);
+
         post.softDelete();
 
         log.info("게시글이 삭제 되었습니다. id = {}", id);
     }
 
-    public void hardDelete(Long id) {
+    public void hardDelete(Long id, String memberName, String memberRole) {
         Post post = findPost(id);
+
+        validatePermission(post, memberName, memberRole);
+        
         postRepository.delete(post);
 
         log.info("게시글이 영구 삭제되었습니다. id = {}", id);
     }
 
-    private void validateWriter(Post post, Member member) {
-        if (!post.isWriter(member)) {
+    private void validatePermission(Post post, String memberName, String memberRole) {
+        if (!post.isWriter(memberName) && Role.from(memberRole) != Role.ADMIN) { // 작성자가 아니면서 관리자가 아닐 경우
             throw new ForbiddenException("해당 글 수정 권한이 없는 사용자입니다.");
         }
     }

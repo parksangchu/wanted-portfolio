@@ -32,8 +32,8 @@ public class Post extends BaseModel {
 
     private Integer view;
 
-    public boolean isWriter(Member member) {
-        return this.member.equals(member);
+    public boolean isWriter(String memberName) {
+        return member.hasSameName(memberName);
     }
 
     public void changeTitle(String title) {

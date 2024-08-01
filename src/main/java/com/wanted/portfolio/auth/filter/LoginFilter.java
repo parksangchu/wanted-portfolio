@@ -5,7 +5,6 @@ import com.wanted.portfolio.auth.dto.CustomUserDetails;
 import com.wanted.portfolio.auth.dto.LoginRequest;
 import com.wanted.portfolio.auth.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -53,7 +52,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
-                                            Authentication authResult) throws ServletException, IOException {
+                                            Authentication authResult) {
         UserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
 
         String username = customUserDetails.getUsername();
