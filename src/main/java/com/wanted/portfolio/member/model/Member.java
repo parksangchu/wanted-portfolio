@@ -3,6 +3,8 @@ package com.wanted.portfolio.member.model;
 import com.wanted.portfolio.global.model.BaseModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,7 +23,15 @@ public class Member extends BaseModel {
 
     private String phoneNumber;
 
+    @Column(unique = true)
     private String name;
 
     private String password;
+
+    @Enumerated(value = EnumType.STRING)
+    private Role role;
+
+    public boolean hasSameName(String name) {
+        return this.name.equals(name);
+    }
 }

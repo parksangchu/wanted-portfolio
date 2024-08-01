@@ -1,6 +1,7 @@
 package com.wanted.portfolio.post.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
@@ -8,6 +9,7 @@ import com.wanted.portfolio.global.exception.BadRequestException;
 import com.wanted.portfolio.global.exception.ForbiddenException;
 import com.wanted.portfolio.global.util.Clock;
 import com.wanted.portfolio.member.model.Member;
+import com.wanted.portfolio.member.model.Role;
 import com.wanted.portfolio.member.repository.MemberRepository;
 import com.wanted.portfolio.post.dto.PostRequest;
 import com.wanted.portfolio.post.model.Post;
@@ -45,11 +47,11 @@ class PostServiceTest {
 
     @BeforeEach
     void setUp() {
-        member = new Member("tester@mail.com", "010-1111-1111", "tester", "test");
+        member = new Member("tester@mail.com", "010-1111-1111", "tester", "test", Role.USER);
         memberRepository.save(member);
 
         PostRequest postRequest = new PostRequest("test title", "test content");
-        post = postService.createPost(postRequest, member.getId());
+        post = postService.createPost(postRequest, member.getName());
     }
 
     @ParameterizedTest
@@ -60,7 +62,7 @@ class PostServiceTest {
 
         when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
 
-        postService.updatePost(post.getId(), postRequest, member.getId());
+        postService.updatePost(post.getId(), postRequest, member.getName(), Role.USER.getValue());
 
         assertThat(post.getTitle()).isEqualTo("title update");
         assertThat(post.getContent()).isEqualTo("content update");
@@ -78,14 +80,15 @@ class PostServiceTest {
 
         when(clock.getCurrentDate()).thenReturn(exDate);
 
-        assertThatThrownBy(() -> postService.updatePost(post.getId(), postRequest, member.getId()))
+        assertThatThrownBy(
+                () -> postService.updatePost(post.getId(), postRequest, member.getName(), Role.USER.getValue()))
                 .isInstanceOf(BadRequestException.class);
     }
 
     @Test
     @DisplayName("사용자가 동일하지 않으면 글 수정이 불가능하다.")
     void updatePost_invalidWriter() {
-        Member other = new Member(null, null, null, null);
+        Member other = new Member(null, null, null, null, Role.USER);
         memberRepository.save(other);
 
         PostRequest postRequest = new PostRequest("test update", "content update");
@@ -93,8 +96,25 @@ class PostServiceTest {
         int plusDays = 9;
         when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
 
-        assertThatThrownBy(() -> postService.updatePost(post.getId(), postRequest, other.getId()))
+        assertThatThrownBy(
+                () -> postService.updatePost(post.getId(), postRequest, other.getName(), Role.USER.getValue()))
                 .isInstanceOf(ForbiddenException.class);
+    }
+
+    @Test
+    @DisplayName("관리자는가 모든 글을 수정할 수 있다.")
+    void updatePost_admin() {
+        Member other = new Member(null, null, null, null, Role.ADMIN);
+        memberRepository.save(other);
+
+        PostRequest postRequest = new PostRequest("test update", "content update");
+
+        int plusDays = 9;
+        when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
+
+        assertThatCode(
+                () -> postService.updatePost(post.getId(), postRequest, other.getName(), other.getRole().getValue()))
+                .doesNotThrowAnyException();
     }
 
     @ParameterizedTest
@@ -148,7 +168,7 @@ class PostServiceTest {
     void softDelete() {
         assertThat(post.getDeletedAt()).isNull();
 
-        postService.softDelete(post.getId());
+        postService.softDelete(post.getId(), member.getName(), Role.USER.getValue());
 
         assertThat(post.getDeletedAt()).isNotNull();
     }
@@ -158,7 +178,7 @@ class PostServiceTest {
     void hardDelete() {
         assertThat(postRepository.findById(post.getId())).isNotEmpty();
 
-        postService.hardDelete(post.getId());
+        postService.hardDelete(post.getId(), member.getName(), Role.USER.getValue());
 
         assertThat(postRepository.findById(post.getId())).isEmpty();
     }
