@@ -132,6 +132,11 @@ public class PostService {
         log.info("게시글이 영구 삭제되었습니다. id = {}", id);
     }
 
+    @Transactional(readOnly = true)
+    public List<PostFile> findPostFilesByPostId(Long postId) {
+        return postFileRepository.findAllByPostId(postId);
+    }
+
     private void validatePermission(Post post, String memberName, String memberRole) {
         if (!post.isWriter(memberName) && Role.from(memberRole) != Role.ADMIN) { // 작성자가 아니면서 관리자가 아닐 경우
             throw new ForbiddenException("해당 글 수정 권한이 없는 사용자입니다.");
