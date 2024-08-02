@@ -5,6 +5,8 @@ import com.wanted.portfolio.file.repository.FileRepository;
 import com.wanted.portfolio.file.util.FileManager;
 import com.wanted.portfolio.file.util.S3Manager;
 import com.wanted.portfolio.global.exception.BadRequestException;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,20 @@ public class FileService {
         log.info("새로운 파일이 업로드 되었습니다. {}", file);
 
         return file;
+    }
+
+    @Transactional(readOnly = true)
+    public List<File> findAll(List<Long> ids) {
+        if (ids == null) {
+            return new ArrayList<>();
+        }
+        List<File> files = fileRepository.findAllById(ids);
+
+        if (files.size() != ids.size()) {
+            throw new BadRequestException("잘못된 파일 id가 포함되어 있습니다.");
+        }
+
+        return files;
     }
 
     private void validateFileExists(MultipartFile multipartFile) {

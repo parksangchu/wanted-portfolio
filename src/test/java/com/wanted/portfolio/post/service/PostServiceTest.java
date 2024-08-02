@@ -50,7 +50,7 @@ class PostServiceTest {
         member = new Member("tester@mail.com", "010-1111-1111", "tester", "test", Role.USER);
         memberRepository.save(member);
 
-        PostRequest postRequest = new PostRequest("test title", "test content");
+        PostRequest postRequest = new PostRequest("test title", "test content", null);
         post = postService.createPost(postRequest, member.getName());
     }
 
@@ -58,7 +58,7 @@ class PostServiceTest {
     @DisplayName("사용자가 동일하고 작성일 기준 10일 이내면 글 수정이 가능하다.")
     @ValueSource(ints = {7, 8, 9})
     void updatePost_success(int plusDays) {
-        PostRequest postRequest = new PostRequest("title update", "content update");
+        PostRequest postRequest = new PostRequest("title update", "content update", null);
 
         when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
 
@@ -71,7 +71,7 @@ class PostServiceTest {
     @Test
     @DisplayName("작성일 기준 10일이 지나면 글 수정이 불가능하다.")
     void updatePost_expiration() {
-        PostRequest postRequest = new PostRequest("test update", "content update");
+        PostRequest postRequest = new PostRequest("test update", "content update", null);
 
         int plusDays = 10;
         LocalDate createDate = post.getCreateDate();
@@ -91,7 +91,7 @@ class PostServiceTest {
         Member other = new Member(null, null, null, null, Role.USER);
         memberRepository.save(other);
 
-        PostRequest postRequest = new PostRequest("test update", "content update");
+        PostRequest postRequest = new PostRequest("test update", "content update", null);
 
         int plusDays = 9;
         when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));
@@ -107,7 +107,7 @@ class PostServiceTest {
         Member other = new Member(null, null, null, null, Role.ADMIN);
         memberRepository.save(other);
 
-        PostRequest postRequest = new PostRequest("test update", "content update");
+        PostRequest postRequest = new PostRequest("test update", "content update", null);
 
         int plusDays = 9;
         when(clock.getCurrentDate()).thenReturn(post.getCreateDate().plusDays(plusDays));

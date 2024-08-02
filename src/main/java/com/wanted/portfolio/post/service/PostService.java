@@ -1,5 +1,7 @@
 package com.wanted.portfolio.post.service;
 
+import com.wanted.portfolio.file.model.File;
+import com.wanted.portfolio.file.service.FileService;
 import com.wanted.portfolio.global.exception.BadRequestException;
 import com.wanted.portfolio.global.exception.ForbiddenException;
 import com.wanted.portfolio.global.exception.NotFoundException;
@@ -10,10 +12,13 @@ import com.wanted.portfolio.member.service.MemberService;
 import com.wanted.portfolio.post.dto.PostRequest;
 import com.wanted.portfolio.post.dto.PostSearchCondition;
 import com.wanted.portfolio.post.model.Post;
+import com.wanted.portfolio.post.model.PostFile;
+import com.wanted.portfolio.post.repository.PostFileRepository;
 import com.wanted.portfolio.post.repository.PostQueryRepository;
 import com.wanted.portfolio.post.repository.PostRepository;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,7 +37,9 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostQueryRepository postQueryRepository;
+    private final PostFileRepository postFileRepository;
     private final MemberService memberService;
+    private final FileService fileService;
     private final Clock clock;
 
     public Post createPost(PostRequest postRequest, String memberName) {
@@ -41,6 +48,12 @@ public class PostService {
         Post post = new Post(postRequest.getTitle(), postRequest.getContent(), member, 0);
 
         postRepository.save(post);
+
+        List<File> files = fileService.findAll(postRequest.getFileIds());
+
+        List<PostFile> postFiles = getPostFiles(post, files);
+
+        postFileRepository.saveAll(postFiles);
 
         log.info("새로운 게시글이 생성되었습니다. = {}", post);
 
@@ -55,6 +68,14 @@ public class PostService {
 
         post.changeTitle(postRequest.getTitle());
         post.changeContent(postRequest.getContent());
+
+        postFileRepository.deleteAllByPostId(post.getId());
+
+        List<File> files = fileService.findAll(postRequest.getFileIds());
+
+        List<PostFile> postFiles = getPostFiles(post, files);
+
+        postFileRepository.saveAll(postFiles);
 
         log.info("게시글이 수정되었습니다. = {}", post);
 
@@ -105,7 +126,7 @@ public class PostService {
         Post post = findPost(id);
 
         validatePermission(post, memberName, memberRole);
-        
+
         postRepository.delete(post);
 
         log.info("게시글이 영구 삭제되었습니다. id = {}", id);
@@ -129,5 +150,11 @@ public class PostService {
         LocalDate nowDate = clock.getCurrentDate();
 
         return (int) (ChronoUnit.DAYS.between(createDate, nowDate) + 1);
+    }
+
+    private List<PostFile> getPostFiles(Post post, List<File> files) {
+        return files.stream()
+                .map(file -> new PostFile(post, file))
+                .toList();
     }
 }
