@@ -3,13 +3,16 @@ package com.wanted.portfolio.post.controller;
 import com.wanted.portfolio.auth.dto.CustomUserDetails;
 import com.wanted.portfolio.post.dto.PostCreateResponse;
 import com.wanted.portfolio.post.dto.PostDetailResponse;
+import com.wanted.portfolio.post.dto.PostFileResponse;
 import com.wanted.portfolio.post.dto.PostListResponse;
 import com.wanted.portfolio.post.dto.PostRequest;
 import com.wanted.portfolio.post.dto.PostSearchCondition;
 import com.wanted.portfolio.post.dto.PostUpdateResponse;
 import com.wanted.portfolio.post.model.Post;
+import com.wanted.portfolio.post.model.PostFile;
 import com.wanted.portfolio.post.service.PostService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -102,5 +105,16 @@ public class PostController {
         postService.hardDelete(id, username, role);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/{id}/files")
+    public ResponseEntity<List<PostFileResponse>> getPostFiles(@PathVariable Long id) {
+        List<PostFile> postFiles = postService.findPostFilesByPostId(id);
+
+        List<PostFileResponse> postFileResponses = postFiles.stream()
+                .map(PostFileResponse::from)
+                .toList();
+
+        return ResponseEntity.ok(postFileResponses);
     }
 }

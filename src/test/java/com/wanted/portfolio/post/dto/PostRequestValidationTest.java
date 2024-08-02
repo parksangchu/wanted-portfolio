@@ -21,7 +21,7 @@ public class PostRequestValidationTest {
 
     @BeforeEach
     void setUp() {
-        postRequest = new PostRequest("Valid Title", "Valid Content");
+        postRequest = new PostRequest("Valid Title", "Valid Content", null);
     }
 
     @Test
@@ -36,7 +36,7 @@ public class PostRequestValidationTest {
     @Test
     @DisplayName("제목이 비어 있으면 유효성 검사에 실패한다.")
     void whenTitleIsEmpty_thenValidationFails() {
-        postRequest = new PostRequest("", "Valid Content");
+        postRequest = new PostRequest("", "Valid Content", null);
         Errors errors = new BeanPropertyBindingResult(postRequest, "postRequest");
         validator.validate(postRequest, errors);
 
@@ -47,7 +47,7 @@ public class PostRequestValidationTest {
     @Test
     @DisplayName("본문이 비어 있으면 유효성 검사에 실패한다.")
     void whenContentIsEmpty_thenValidationFails() {
-        postRequest = new PostRequest("Valid Title", "");
+        postRequest = new PostRequest("Valid Title", "", null);
         Errors errors = new BeanPropertyBindingResult(postRequest, "postRequest");
         validator.validate(postRequest, errors);
 
@@ -59,7 +59,7 @@ public class PostRequestValidationTest {
     @DisplayName("제목이 200자를 초과하면 유효성 검사에 실패한다.")
     void whenTitleExceedsMaxLength_thenValidationFails() {
         String longTitle = "a".repeat(201);
-        postRequest = new PostRequest(longTitle, "Valid Content");
+        postRequest = new PostRequest(longTitle, "Valid Content", null);
         Errors errors = new BeanPropertyBindingResult(postRequest, "postRequest");
         validator.validate(postRequest, errors);
 
@@ -71,7 +71,7 @@ public class PostRequestValidationTest {
     @DisplayName("본문이 1000자를 초과하면 유효성 검사에 실패한다.")
     void whenContentExceedsMaxLength_thenValidationFails() {
         String longContent = "a".repeat(1001);
-        postRequest = new PostRequest("Valid Title", longContent);
+        postRequest = new PostRequest("Valid Title", longContent, null);
         Errors errors = new BeanPropertyBindingResult(postRequest, "postRequest");
         validator.validate(postRequest, errors);
 
