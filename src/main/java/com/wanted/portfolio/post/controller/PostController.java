@@ -1,6 +1,9 @@
 package com.wanted.portfolio.post.controller;
 
 import com.wanted.portfolio.auth.dto.CustomUserDetails;
+import com.wanted.portfolio.comment.dto.CommentResponse;
+import com.wanted.portfolio.comment.model.Comment;
+import com.wanted.portfolio.comment.service.CommentService;
 import com.wanted.portfolio.post.dto.PostCreateResponse;
 import com.wanted.portfolio.post.dto.PostDetailResponse;
 import com.wanted.portfolio.post.dto.PostFileResponse;
@@ -34,6 +37,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/posts")
 public class PostController {
     private final PostService postService;
+
+    private final CommentService commentService;
 
     @PostMapping
     public ResponseEntity<PostCreateResponse> createPost(@Valid @RequestBody PostRequest postRequest,
@@ -116,5 +121,14 @@ public class PostController {
                 .toList();
 
         return ResponseEntity.ok(postFileResponses);
+    }
+
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<Page<CommentResponse>> getComments(@PathVariable Long id, Pageable pageable) {
+        Page<Comment> comments = commentService.findCommentsByPostId(id, pageable);
+
+        Page<CommentResponse> commentResponses = comments.map(CommentResponse::from);
+
+        return ResponseEntity.ok(commentResponses);
     }
 }

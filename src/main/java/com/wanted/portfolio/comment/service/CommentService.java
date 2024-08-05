@@ -9,11 +9,15 @@ import com.wanted.portfolio.post.model.Post;
 import com.wanted.portfolio.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional
 public class CommentService {
 
     private final CommentRepository commentRepository;
@@ -32,5 +36,10 @@ public class CommentService {
 
         log.info("새로운 댓글이 작성되었습니다. {}", comment);
         return comment;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Comment> findCommentsByPostId(Long id, Pageable pageable) {
+        return commentRepository.findAllByPostId(id, pageable);
     }
 }
