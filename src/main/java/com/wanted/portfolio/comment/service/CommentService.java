@@ -40,6 +40,6 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public Page<Comment> findCommentsByPostId(Long id, Pageable pageable) {
-        return commentRepository.findAllByPostId(id, pageable);
+        return commentRepository.findAllByPostIdAndDeletedAtIsNull(id, pageable);
     }
 }
